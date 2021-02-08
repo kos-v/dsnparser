@@ -33,7 +33,7 @@ dsn.GetRaw()               // string "mysql://user:password@example.local:3306/d
 `:password@` - only password, without user.  
 
 ##### Escaping
-You can escape the ":" and "@" characters in credentials, as well as the "=" and "&" characters in the extra options. To do this, specify "\" before the desired character.  
+You can escape the ":" and "@" characters in credentials, as well as the "=" and "&" characters in the extra options. To do this, specify "\\" before the desired character.  
 Examples:  
 `us\:e\@r:p\@ssw\:ord@` -> `us:e@r:p@ssw:ord@`  
 `us\:e\@r:p\@ssw\:ord@` -> `us:e@r:p@ssw:ord@`  
