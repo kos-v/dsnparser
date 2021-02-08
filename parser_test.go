@@ -199,6 +199,7 @@ func TestParse_Path(t *testing.T) {
 		{"example.com/foo/bar/baz?tblsprefix=fs_", "foo/bar/baz"},
 		{"example.com/foo", "foo"},
 		{"example.com/foo/bar/baz", "foo/bar/baz"},
+		{"socket:///foo/bar.sock", "foo/bar.sock"},
 		{"mysql://user:password@example.com:3306/фу/бар/баз?tblsprefix=fs_", "фу/бар/баз"},
 		{"mysql://user:password@example.com:3306/фу/бар/баз", "фу/бар/баз"},
 	}
