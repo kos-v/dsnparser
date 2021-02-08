@@ -1,6 +1,6 @@
 ## DSN Parser
 
-This library parses a DSN of the form:
+This library parses a DSN of the form:  
 ![](doc/structure.png)  
 Each of the sections is optional, so, for example, a DSN can be without schema or credentials.  
 
@@ -33,8 +33,8 @@ dsn.GetRaw()               // string "mysql://user:password@example.local:3306/d
 `:password@` - only password, without user.  
 
 ##### Escaping
-You can escape the ":" and "@" characters in credentials, as well as the "=" and "&" characters in the extra options. To do this, specify "\" before the desired character.
-Examples:
+You can escape the ":" and "@" characters in credentials, as well as the "=" and "&" characters in the extra options. To do this, specify "\" before the desired character.  
+Examples:  
 `us\:e\@r:p\@ssw\:ord@` -> `us:e@r:p@ssw:ord@`  
 `us\:e\@r:p\@ssw\:ord@` -> `us:e@r:p@ssw:ord@`  
 `?key1=foo \& bar&key2=baz \= quux` -> `?key1=foo & bar&key2=baz = quux`  
