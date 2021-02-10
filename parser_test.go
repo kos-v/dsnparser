@@ -243,6 +243,11 @@ func TestParse_Params(t *testing.T) {
 			ExpectedItem{"foo=Key&", "&foo=val"},
 			ExpectedItem{"bar=Key&", "&bar=val"},
 		}},
+		{"mysql://user:password@example.com:3306/?fooKey=foo val&barKey=bar val", ExpectedList{
+			ExpectedItem{"fooKey", "foo val"},
+			ExpectedItem{"barKey", "bar val"},
+		}},
+		{"mysql://user:password@example.com", ExpectedList{}},
 	}
 
 	for testId, test := range tests {
