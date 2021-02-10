@@ -29,6 +29,8 @@ dsn.GetRaw()               // string "mysql://user:password@example.local:3306/d
 - `example.local:65535`
 - `user:password@`
 - `socket:///foo/bar.sock`
+- `mysql://user:password@example.local/dbname`
+- `mysql://example.local/?db=dbname&user=user&password=password`
 
 ##### Credentials
 `user:password@` - user and password.  
