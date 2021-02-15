@@ -1,5 +1,6 @@
 language: go
 go:
+  - "1"
   - "1.10"
 script:
   - go test -v -race -coverprofile=coverage.txt -covermode=atomic ./...
