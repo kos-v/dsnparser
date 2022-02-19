@@ -1,5 +1,5 @@
 ## DSN Parser
-[![Build Status](https://travis-ci.org/kos-v/dsnparser.svg?branch=main)](https://travis-ci.org/kos-v/dsnparser)
+[![Build Status](https://app.travis-ci.com/kos-v/dsnparser.svg?branch=main)](https://app.travis-ci.com/kos-v/dsnparser)
 [![Coverage Status](https://codecov.io/gh/kos-v/dsnparser/branch/main/graph/badge.svg)](https://codecov.io/gh/kos-v/dsnparser)
 [![Go Report Card](https://goreportcard.com/badge/github.com/kos-v/dsnparser)](https://goreportcard.com/report/github.com/kos-v/dsnparser)
 
