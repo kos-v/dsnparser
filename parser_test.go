@@ -2,6 +2,16 @@ package dsnparser
 
 import "testing"
 
+func TestDSN_HasParam(t *testing.T) {
+	result := Parse("mysql://user:password@example.com:3306/dbname?foo=foo val")
+	if !result.HasParam("foo") {
+		t.Errorf("Unexpected value. Must be true")
+	}
+	if result.HasParam("bar") {
+		t.Errorf("Unexpected value. Must be false")
+	}
+}
+
 func TestParse_Scheme(t *testing.T) {
 	tests := []struct {
 		dsn      string
@@ -11,7 +21,7 @@ func TestParse_Scheme(t *testing.T) {
 		{"mysql", ""},
 		{"://", ""},
 		{"mysql://", "mysql"},
-		{"mysql://user:password@example.com:3306/dbname?tblsprefix=fs_", "mysql"},
+		{"mysql://user:password@tcp(example.com:3306)/dbname?tblsprefix=fs_", "mysql"},
 	}
 
 	for i, test := range tests {
@@ -43,7 +53,7 @@ func TestParse_User(t *testing.T) {
 		{":password@", ""},
 		{"u@", "u"},
 		{":@", ""},
-		{"mysql://user:password@example.com:3306/dbname?tblsprefix=fs_", "user"},
+		{"mysql://user:password@tcp(example.com:3306)/dbname?tblsprefix=fs_", "user"},
 		{"mysql://user@example.com:3306/dbname?tblsprefix=fs_", "user"},
 		{"mysql://example.com:3306/dbname?tblsprefix=fs_", ""},
 		{"\\@@", "@"},
@@ -89,7 +99,7 @@ func TestParse_Password(t *testing.T) {
 		{":password@", "password"},
 		{":p@", "p"},
 		{":@", ""},
-		{"mysql://user:password@example.com:3306/dbname?tblsprefix=fs_", "password"},
+		{"mysql://user:password@tcp(example.com:3306)/dbname?tblsprefix=fs_", "password"},
 		{"mysql://user@example.com:3306/dbname?tblsprefix=fs_", ""},
 		{"mysql://example.com:3306/dbname?tblsprefix=fs_", ""},
 		{"\\@@", ""},
@@ -121,7 +131,9 @@ func TestParse_Host(t *testing.T) {
 		expected string
 	}{
 		{"mysql://user:password@example.com:3306/dbname?tblsprefix=fs_", "example.com"},
+		{"mysql://user:password@tcp(example.com:3306)/dbname?tblsprefix=fs_", "example.com"},
 		{"mysql://user:password@example.com/dbname?tblsprefix=fs_", "example.com"},
+		{"mysql://user:password@tcp(example.com)/dbname?tblsprefix=fs_", "example.com"},
 		{"mysql://user:password@localhost/dbname?tblsprefix=fs_", "localhost"},
 		{"mysql://user:password@127.0.0.1/dbname?tblsprefix=fs_", "127.0.0.1"},
 		{"mysql://user:password@example.com", "example.com"},
@@ -163,11 +175,14 @@ func TestParse_Port(t *testing.T) {
 		expected string
 	}{
 		{"mysql://user:password@example.com:3306/dbname?tblsprefix=fs_", "3306"},
+		{"mysql://user:password@tcp(example.com:3306)/dbname?tblsprefix=fs_", "3306"},
 		{"mysql://user:password@example.com:3306", "3306"},
+		{"mysql://user:password@tcp(example.com:3306)", "3306"},
 		{"mysql://user:password@example.com/dbname?tblsprefix=fs_", ""},
 		{"mysql://user:password@example.com:/dbname?tblsprefix=fs_", ""},
 		{"mysql://user:password@example.com:bad, but working/dbname?tblsprefix=fs_", "bad, but working"},
 		{"example.com:3306", "3306"},
+		{"tcp(example.com:3306)", "3306"},
 		{"example.com:", ""},
 		{"example.com", ""},
 		{"хост.лок:3306", "3306"},
@@ -187,6 +202,7 @@ func TestParse_Path(t *testing.T) {
 		expected string
 	}{
 		{"mysql://user:password@example.com:3306/foo?tblsprefix=fs_", "foo"},
+		{"mysql://user:password@tcp(example.com:3306)/foo?tblsprefix=fs_", "foo"},
 		{"mysql://user:password@example.com:3306/foo/bar/baz?tblsprefix=fs_", "foo/bar/baz"},
 		{"mysql://user:password@example.com:3306//?tblsprefix=fs_", "/"},
 		{"mysql://user:password@example.com:3306/?tblsprefix=fs_", ""},
@@ -258,13 +274,35 @@ func TestParse_Params(t *testing.T) {
 		}
 
 		for _, expected := range test.expected {
-			if dsn.HasParam(expected.key) {
-				if dsn.GetParam(expected.key) != expected.value {
-					t.Errorf("Unexpected value in test \"%v\". Expected: \"%s\". Result: \"%s\"", testId+1, expected.value, dsn.GetParam(expected.key))
-				}
-			} else {
-				t.Errorf("Expected key not found in returned result. Test: %v. Expected key: \"%s\".", testId+1, expected.key)
+			if dsn.GetParam(expected.key) != expected.value {
+				t.Errorf("Unexpected value in test \"%v\". Expected: \"%s\". Result: \"%s\"", testId+1, expected.value, dsn.GetParam(expected.key))
 			}
+		}
+	}
+}
+
+func TestParse_Transport(t *testing.T) {
+	tests := []struct {
+		dsn      string
+		expected string
+	}{
+		{"example.com", ""},
+		{"example.com:3306", ""},
+		{"(example.com)", ""},
+		{"tcp()", "tcp"},
+		{"x(example.com)", "x"},
+		{"tcp(example.com)", "tcp"},
+		{"tcp(example.com:3306)", "tcp"},
+		{"mysql://user:password@tcp(example.com)", "tcp"},
+		{"mysql://user:password@tcp(example.com:3306)", "tcp"},
+		{"mysql://user:password@tcp(example.com)/dbname?tblsprefix=fs_", "tcp"},
+		{"mysql://user:password@tcp(example.com:3306)/dbname?tblsprefix=fs_", "tcp"},
+	}
+
+	for i, test := range tests {
+		dsn := Parse(test.dsn)
+		if dsn.GetTransport() != test.expected {
+			t.Errorf("Unexpected value in test \"%v\". Expected: \"%s\". Result: \"%s\"", i+1, test.expected, dsn.GetTransport())
 		}
 	}
 }

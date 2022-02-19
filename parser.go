@@ -1,52 +1,72 @@
 package dsnparser
 
+// DSN container for data after dsn parsing.
 type DSN struct {
-	raw      string
-	scheme   string
-	user     string
-	password string
-	host     string
-	port     string
-	path     string
-	params   map[string]string
+	raw       string
+	scheme    string
+	user      string
+	password  string
+	host      string
+	port      string
+	path      string
+	params    map[string]string
+	transport string
 }
 
+// GetHost returns a host as the string.
 func (d *DSN) GetHost() string {
 	return d.host
 }
 
+// GetPassword returns a credential password as the string.
 func (d *DSN) GetPassword() string {
 	return d.password
 }
 
+// GetParam returns an additional parameter by key as the string.
 func (d *DSN) GetParam(key string) string {
+	if !d.HasParam(key) {
+		return ""
+	}
 	return d.params[key]
 }
 
+// GetParams returns additional parameters as key-value map.
 func (d *DSN) GetParams() map[string]string {
 	return d.params
 }
 
+// GetPath returns a path as the string.
 func (d *DSN) GetPath() string {
 	return d.path
 }
 
+// GetPort returns a port as the string.
 func (d *DSN) GetPort() string {
 	return d.port
 }
 
+// GetRaw returns the dsn in its raw form, as it was passed to the Parse function.
 func (d *DSN) GetRaw() string {
 	return d.raw
 }
 
+// GetScheme returns a scheme as the string.
 func (d *DSN) GetScheme() string {
 	return d.scheme
 }
 
+// GetTransport returns a transport as the string.
+func (d *DSN) GetTransport() string {
+	return d.transport
+}
+
+// GetUser returns a credential user as the string.
 func (d *DSN) GetUser() string {
 	return d.user
 }
 
+// HasParam checks for the existence of an additional parameter.
 func (d *DSN) HasParam(key string) bool {
 	if _, ok := d.params[key]; ok {
 		return true
@@ -54,6 +74,7 @@ func (d *DSN) HasParam(key string) bool {
 	return false
 }
 
+// Parse receives a raw dsn as argument, parses it and returns it in the DSN structure.
 func Parse(raw string) *DSN {
 	d := DSN{
 		raw:    raw,
@@ -94,6 +115,28 @@ func Parse(raw string) *DSN {
 			dsn = dsn[dsnPos+1:]
 			break
 		}
+	}
+
+	// Transport parsing
+	for dsnPos, dsnSymbol := range dsn {
+		if dsnSymbol != '(' {
+			continue
+		}
+
+		hpExtractBeginPos := dsnPos + 1
+		hpExtractEndPos := -1
+		for hpPos, hpSymbol := range dsn[hpExtractBeginPos:] {
+			if hpSymbol == ')' {
+				hpExtractEndPos = dsnPos + hpPos
+			}
+		}
+		if hpExtractEndPos == -1 {
+			continue
+		}
+
+		d.transport = string(dsn[:hpExtractBeginPos-1])
+		dsn = append(dsn[hpExtractBeginPos:hpExtractEndPos+1], dsn[hpExtractEndPos+2:]...)
+		break
 	}
 
 	// Host and port parsing

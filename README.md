@@ -16,17 +16,18 @@ go get github.com/kos-v/dsnparser
 ```go
 import "github.com/kos-v/dsnparser"
 
-dsn := dsnparser.Parse("mysql://user:password@example.local:3306/dbname?transport=tcp");
-dsn.GetScheme()            // string "mysql"
-dsn.GetUser()              // string "user"
-dsn.GetPassword()          // string "password"
-dsn.GetHost()              // string "example.local"
-dsn.GetPort()              // string "3306"
-dsn.GetPath()              // string "dbname"
-dsn.GetParam("transport") // string "tcp"
-dsn.GetParams()            // map[string]string [transport: tcp]
-dsn.HasParam("transport") // bool true
-dsn.GetRaw()               // string "mysql://user:password@example.local:3306/dbname?transport=tcp"
+dsn := dsnparser.Parse("mysql://user:password@tcp(example.local:3306)/dbname?encoding=utf8mb4");
+dsn.GetScheme()          // string "mysql"
+dsn.GetUser()            // string "user"
+dsn.GetPassword()        // string "password"
+dsn.GetHost()            // string "example.local"
+dsn.GetPort()            // string "3306"
+dsn.GetPath()            // string "dbname"
+dsn.GetParam("encoding") // string "utf8mb4"
+dsn.GetParams()          // map[string]string [encoding: "utf8mb4"]
+dsn.GetTransport()       // string "tcp"
+dsn.HasParam("encoding") // bool true
+dsn.GetRaw()             // string "mysql://user:password@example.local:3306/dbname?encoding=utf8mb4"
 ```
 
 ##### Examples:
