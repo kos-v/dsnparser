@@ -1,6 +1,6 @@
 package dsnparser
 
-type DSN struct {
+type dsn struct {
 	raw       string
 	scheme    string
 	user      string
@@ -12,58 +12,58 @@ type DSN struct {
 	transport string
 }
 
-func (d *DSN) GetHost() string {
+func (d *dsn) GetHost() string {
 	return d.host
 }
 
-func (d *DSN) GetPassword() string {
+func (d *dsn) GetPassword() string {
 	return d.password
 }
 
-func (d *DSN) GetParam(key string) string {
+func (d *dsn) GetParam(key string) string {
 	if !d.HasParam(key) {
 		return ""
 	}
 	return d.params[key]
 }
 
-func (d *DSN) GetParams() map[string]string {
+func (d *dsn) GetParams() map[string]string {
 	return d.params
 }
 
-func (d *DSN) GetPath() string {
+func (d *dsn) GetPath() string {
 	return d.path
 }
 
-func (d *DSN) GetPort() string {
+func (d *dsn) GetPort() string {
 	return d.port
 }
 
-func (d *DSN) GetRaw() string {
+func (d *dsn) GetRaw() string {
 	return d.raw
 }
 
-func (d *DSN) GetScheme() string {
+func (d *dsn) GetScheme() string {
 	return d.scheme
 }
 
-func (d *DSN) GetTransport() string {
+func (d *dsn) GetTransport() string {
 	return d.transport
 }
 
-func (d *DSN) GetUser() string {
+func (d *dsn) GetUser() string {
 	return d.user
 }
 
-func (d *DSN) HasParam(key string) bool {
+func (d *dsn) HasParam(key string) bool {
 	if _, ok := d.params[key]; ok {
 		return true
 	}
 	return false
 }
 
-func Parse(raw string) *DSN {
-	d := DSN{
+func Parse(raw string) *dsn {
+	d := dsn{
 		raw:    raw,
 		params: map[string]string{},
 	}
