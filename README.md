@@ -7,6 +7,11 @@ This library parses a DSN of the form:
 ![](doc/structure.png)  
 Each of the sections is optional, so, for example, a DSN can be without schema or credentials.  
 
+##### Installation
+```shell
+go get github.com/kos-v/dsnparser
+```
+
 ##### Using
 ```go
 import "github.com/kos-v/dsnparser"
