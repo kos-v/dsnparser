@@ -1,14 +1,15 @@
 package dsnparser
 
 type DSN struct {
-	raw      string
-	scheme   string
-	user     string
-	password string
-	host     string
-	port     string
-	path     string
-	params   map[string]string
+	raw       string
+	scheme    string
+	user      string
+	password  string
+	host      string
+	port      string
+	path      string
+	params    map[string]string
+	transport string
 }
 
 func (d *DSN) GetHost() string {
@@ -44,6 +45,10 @@ func (d *DSN) GetRaw() string {
 
 func (d *DSN) GetScheme() string {
 	return d.scheme
+}
+
+func (d *DSN) GetTransport() string {
+	return d.transport
 }
 
 func (d *DSN) GetUser() string {
@@ -97,6 +102,28 @@ func Parse(raw string) *DSN {
 			dsn = dsn[dsnPos+1:]
 			break
 		}
+	}
+
+	// Transport parsing
+	for dsnPos, dsnSymbol := range dsn {
+		if dsnSymbol != '(' {
+			continue
+		}
+
+		hpExtractBeginPos := dsnPos + 1
+		hpExtractEndPos := -1
+		for hpPos, hpSymbol := range dsn[hpExtractBeginPos:] {
+			if hpSymbol == ')' {
+				hpExtractEndPos = dsnPos + hpPos
+			}
+		}
+		if hpExtractEndPos == -1 {
+			continue
+		}
+
+		d.transport = string(dsn[:hpExtractBeginPos-1])
+		dsn = append(dsn[hpExtractBeginPos:hpExtractEndPos+1], dsn[hpExtractEndPos+2:]...)
+		break
 	}
 
 	// Host and port parsing
