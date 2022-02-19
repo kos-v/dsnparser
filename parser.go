@@ -61,7 +61,7 @@ func (d *DSN) GetTransport() string {
 	return d.transport
 }
 
-// GetPassword returns a credential user as the string.
+// GetUser returns a credential user as the string.
 func (d *DSN) GetUser() string {
 	return d.user
 }
