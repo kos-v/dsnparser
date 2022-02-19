@@ -20,6 +20,9 @@ func (d *DSN) GetPassword() string {
 }
 
 func (d *DSN) GetParam(key string) string {
+	if !d.HasParam(key) {
+		return ""
+	}
 	return d.params[key]
 }
 
