@@ -2,6 +2,16 @@ package dsnparser
 
 import "testing"
 
+func TestDSN_HasParam(t *testing.T) {
+	result := Parse("mysql://user:password@example.com:3306/dbname?foo=foo val")
+	if !result.HasParam("foo") {
+		t.Errorf("Unexpected value. Must be true")
+	}
+	if result.HasParam("bar") {
+		t.Errorf("Unexpected value. Must be false")
+	}
+}
+
 func TestParse_Scheme(t *testing.T) {
 	tests := []struct {
 		dsn      string
@@ -264,12 +274,8 @@ func TestParse_Params(t *testing.T) {
 		}
 
 		for _, expected := range test.expected {
-			if dsn.HasParam(expected.key) {
-				if dsn.GetParam(expected.key) != expected.value {
-					t.Errorf("Unexpected value in test \"%v\". Expected: \"%s\". Result: \"%s\"", testId+1, expected.value, dsn.GetParam(expected.key))
-				}
-			} else {
-				t.Errorf("Expected key not found in returned result. Test: %v. Expected key: \"%s\".", testId+1, expected.key)
+			if dsn.GetParam(expected.key) != expected.value {
+				t.Errorf("Unexpected value in test \"%v\". Expected: \"%s\". Result: \"%s\"", testId+1, expected.value, dsn.GetParam(expected.key))
 			}
 		}
 	}
