@@ -125,6 +125,32 @@ func TestParse_Password(t *testing.T) {
 	}
 }
 
+func TestParse_Transport(t *testing.T) {
+	tests := []struct {
+		dsn      string
+		expected string
+	}{
+		{"example.com", ""},
+		{"example.com:3306", ""},
+		{"(example.com)", ""},
+		{"tcp()", "tcp"},
+		{"x(example.com)", "x"},
+		{"tcp(example.com)", "tcp"},
+		{"tcp(example.com:3306)", "tcp"},
+		{"mysql://user:password@tcp(example.com)", "tcp"},
+		{"mysql://user:password@tcp(example.com:3306)", "tcp"},
+		{"mysql://user:password@tcp(example.com)/dbname?tblsprefix=fs_", "tcp"},
+		{"mysql://user:password@tcp(example.com:3306)/dbname?tblsprefix=fs_", "tcp"},
+	}
+
+	for i, test := range tests {
+		dsn := Parse(test.dsn)
+		if dsn.GetTransport() != test.expected {
+			t.Errorf("Unexpected value in test \"%v\". Expected: \"%s\". Result: \"%s\"", i+1, test.expected, dsn.GetTransport())
+		}
+	}
+}
+
 func TestParse_Host(t *testing.T) {
 	tests := []struct {
 		dsn      string
@@ -277,32 +303,6 @@ func TestParse_Params(t *testing.T) {
 			if dsn.GetParam(expected.key) != expected.value {
 				t.Errorf("Unexpected value in test \"%v\". Expected: \"%s\". Result: \"%s\"", testId+1, expected.value, dsn.GetParam(expected.key))
 			}
-		}
-	}
-}
-
-func TestParse_Transport(t *testing.T) {
-	tests := []struct {
-		dsn      string
-		expected string
-	}{
-		{"example.com", ""},
-		{"example.com:3306", ""},
-		{"(example.com)", ""},
-		{"tcp()", "tcp"},
-		{"x(example.com)", "x"},
-		{"tcp(example.com)", "tcp"},
-		{"tcp(example.com:3306)", "tcp"},
-		{"mysql://user:password@tcp(example.com)", "tcp"},
-		{"mysql://user:password@tcp(example.com:3306)", "tcp"},
-		{"mysql://user:password@tcp(example.com)/dbname?tblsprefix=fs_", "tcp"},
-		{"mysql://user:password@tcp(example.com:3306)/dbname?tblsprefix=fs_", "tcp"},
-	}
-
-	for i, test := range tests {
-		dsn := Parse(test.dsn)
-		if dsn.GetTransport() != test.expected {
-			t.Errorf("Unexpected value in test \"%v\". Expected: \"%s\". Result: \"%s\"", i+1, test.expected, dsn.GetTransport())
 		}
 	}
 }
