@@ -18,11 +18,6 @@ func (d *DSN) GetHost() string {
 	return d.host
 }
 
-// GetPassword returns a credential password as the string.
-func (d *DSN) GetPassword() string {
-	return d.password
-}
-
 // GetParam returns an additional parameter by key as the string.
 func (d *DSN) GetParam(key string) string {
 	if !d.HasParam(key) {
@@ -34,6 +29,19 @@ func (d *DSN) GetParam(key string) string {
 // GetParams returns additional parameters as key-value map.
 func (d *DSN) GetParams() map[string]string {
 	return d.params
+}
+
+// HasParam checks for the existence of an additional parameter.
+func (d *DSN) HasParam(key string) bool {
+	if _, ok := d.params[key]; ok {
+		return true
+	}
+	return false
+}
+
+// GetPassword returns a credential password as the string.
+func (d *DSN) GetPassword() string {
+	return d.password
 }
 
 // GetPath returns a path as the string.
@@ -64,14 +72,6 @@ func (d *DSN) GetTransport() string {
 // GetUser returns a credential user as the string.
 func (d *DSN) GetUser() string {
 	return d.user
-}
-
-// HasParam checks for the existence of an additional parameter.
-func (d *DSN) HasParam(key string) bool {
-	if _, ok := d.params[key]; ok {
-		return true
-	}
-	return false
 }
 
 // Parse receives a raw dsn as argument, parses it and returns it in the DSN structure.
