@@ -2,22 +2,22 @@ package dsnparser
 
 // DSN container for data after dsn parsing.
 type DSN struct {
-	Raw    string
-	Scheme string
+	raw    string
+	scheme string
 	// dsn source : dsn without schema
-	Source    string
-	User      string
-	Password  string
-	Host      string
-	Port      string
-	Path      string
-	Params    map[string]string
-	Transport string
+	source    string
+	user      string
+	password  string
+	host      string
+	port      string
+	path      string
+	params    map[string]string
+	transport string
 }
 
 // GetHost returns a host as the string.
 func (d *DSN) GetHost() string {
-	return d.Host
+	return d.host
 }
 
 // GetParam returns an additional parameter by key as the string.
@@ -25,17 +25,17 @@ func (d *DSN) GetParam(key string) string {
 	if !d.HasParam(key) {
 		return ""
 	}
-	return d.Params[key]
+	return d.params[key]
 }
 
 // GetParams returns additional parameters as key-value map.
 func (d *DSN) GetParams() map[string]string {
-	return d.Params
+	return d.params
 }
 
 // HasParam checks for the existence of an additional parameter.
 func (d *DSN) HasParam(key string) bool {
-	if _, ok := d.Params[key]; ok {
+	if _, ok := d.params[key]; ok {
 		return true
 	}
 	return false
@@ -43,60 +43,60 @@ func (d *DSN) HasParam(key string) bool {
 
 // GetPassword returns a credential password as the string.
 func (d *DSN) GetPassword() string {
-	return d.Password
+	return d.password
 }
 
 // GetPath returns a path as the string.
 func (d *DSN) GetPath() string {
-	return d.Path
+	return d.path
 }
 
 // GetPort returns a port as the string.
 func (d *DSN) GetPort() string {
-	return d.Port
+	return d.port
 }
 
 // GetRaw returns the dsn in its raw form, as it was passed to the Parse function.
 func (d *DSN) GetRaw() string {
-	return d.Raw
+	return d.raw
 }
 
 // GetScheme returns a scheme as the string.
 func (d *DSN) GetScheme() string {
-	return d.Scheme
+	return d.scheme
 }
 
 // GetTransport returns a transport as the string.
 func (d *DSN) GetTransport() string {
-	return d.Transport
+	return d.transport
 }
 
 // GetUser returns a credential user as the string.
 func (d *DSN) GetUser() string {
-	return d.User
+	return d.user
 }
 
 // GetSource returns a dsn source  user as the string.
 func (d *DSN) GetSource() string {
-	return d.User
+	return d.source
 }
 
 // Parse receives a raw dsn as argument, parses it and returns it in the DSN structure.
 func Parse(raw string) *DSN {
 	d := DSN{
-		Raw:    raw,
-		Source: raw,
-		Params: map[string]string{},
+		raw:    raw,
+		source: raw,
+		params: map[string]string{},
 	}
-	dsn := []rune(d.Raw)
+	dsn := []rune(d.raw)
 
 	// Parsing the scheme
 	for pos, symbol := range dsn {
 		// Found end of the scheme name
 		if symbol == '/' && pos > 2 && string(dsn[pos-2:pos+1]) == "://" {
-			d.Scheme = string(dsn[0 : pos-2])
+			d.scheme = string(dsn[0 : pos-2])
 			dsn = dsn[pos+1:]
-			d.Source = string(dsn)
+			d.source = string(dsn)
 			break
 		}
 	}
@@ -112,13 +112,13 @@ func Parse(raw string) *DSN {
 			for credPos, credChar := range credentials {
 				if credChar == ':' && !isEscaped(credPos, credentials) {
 					hasSeparator = true
-					d.User = string(unEscape([]rune{':', '@'}, credentials[0:credPos]))
-					d.Password = string(unEscape([]rune{':', '@'}, credentials[credPos+1:]))
+					d.user = string(unEscape([]rune{':', '@'}, credentials[0:credPos]))
+					d.password = string(unEscape([]rune{':', '@'}, credentials[credPos+1:]))
 					break
 				}
 			}
 			if !hasSeparator {
-				d.User = string(unEscape([]rune{':', '@'}, credentials))
+				d.user = string(unEscape([]rune{':', '@'}, credentials))
 			}
 
 			dsn = dsn[dsnPos+1:]
@@ -143,7 +143,7 @@ func Parse(raw string) *DSN {
 			continue
 		}
 
-		d.Transport = string(dsn[:hpExtractBeginPos-1])
+		d.transport = string(dsn[:hpExtractBeginPos-1])
 		dsn = append(dsn[hpExtractBeginPos:hpExtractEndPos+1], dsn[hpExtractEndPos+2:]...)
 		break
 	}
@@ -165,20 +165,20 @@ func Parse(raw string) *DSN {
 		hostPort := dsn[0:endPos]
 
 		if multihost {
-			d.Host = string(hostPort)
+			d.host = string(hostPort)
 		} else {
 
 			hasSeparator := false
 			for hpPos, hpSymbol := range hostPort {
 				if hpSymbol == ':' {
 					hasSeparator = true
-					d.Host = string(hostPort[0:hpPos])
-					d.Port = string(hostPort[hpPos+1:])
+					d.host = string(hostPort[0:hpPos])
+					d.port = string(hostPort[hpPos+1:])
 					break
 				}
 			}
 			if !hasSeparator {
-				d.Host = string(hostPort)
+				d.host = string(hostPort)
 			}
 		}
 
@@ -197,7 +197,7 @@ func Parse(raw string) *DSN {
 		}
 
 		if endPos > -1 {
-			d.Path = string(dsn[0:endPos])
+			d.path = string(dsn[0:endPos])
 			dsn = dsn[pos+1:]
 			break
 		}
@@ -233,7 +233,7 @@ func Parse(raw string) *DSN {
 			}
 
 			if len(paramKey) > 0 {
-				d.Params[string(unEscape([]rune{'=', '&'}, paramKey))] = string(unEscape([]rune{'=', '&'}, paramVal))
+				d.params[string(unEscape([]rune{'=', '&'}, paramKey))] = string(unEscape([]rune{'=', '&'}, paramVal))
 			}
 		}
 	}

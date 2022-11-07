@@ -282,8 +282,8 @@ func TestParse_Source(t *testing.T) {
 
 	for i, test := range tests {
 		dsn := Parse(test.dsn)
-		if dsn.Source != test.expected {
-			t.Errorf("Unexpected value in test \"%v\". Expected: \"%s\". Result: \"%s\"", i+1, test.expected, dsn.Source)
+		if dsn.GetSource() != test.expected {
+			t.Errorf("Unexpected value in test \"%v\". Expected: \"%s\". Result: \"%s\"", i+1, test.expected, dsn.GetSource())
 		}
 	}
 }
