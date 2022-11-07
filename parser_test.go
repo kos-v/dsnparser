@@ -185,6 +185,7 @@ func TestParse_Host(t *testing.T) {
 		{"mysql://user:password@хост.лок:3306", "хост.лок"},
 		{"mysql://user:password@хост.лок1", "хост.лок1"},
 		{"mysql://user:password@хост.ло1к", "хост.ло1к"},
+		{"kafka://username:pasword@tcp(ip1:9093,ip2:9093,ip3:9093)/?topic=vsulblog", "ip1:9093,ip2:9093,ip3:9093"},
 	}
 
 	for i, test := range tests {
@@ -206,7 +207,7 @@ func TestParse_Port(t *testing.T) {
 		{"mysql://user:password@tcp(example.com:3306)", "3306"},
 		{"mysql://user:password@example.com/dbname?tblsprefix=fs_", ""},
 		{"mysql://user:password@example.com:/dbname?tblsprefix=fs_", ""},
-		{"mysql://user:password@example.com:bad, but working/dbname?tblsprefix=fs_", "bad, but working"},
+		{"mysql://user:password@example.com:bad, but working/dbname?tblsprefix=fs_", ""},
 		{"example.com:3306", "3306"},
 		{"tcp(example.com:3306)", "3306"},
 		{"example.com:", ""},
@@ -244,12 +245,45 @@ func TestParse_Path(t *testing.T) {
 		{"socket:///foo/bar.sock", "foo/bar.sock"},
 		{"mysql://user:password@example.com:3306/фу/бар/баз?tblsprefix=fs_", "фу/бар/баз"},
 		{"mysql://user:password@example.com:3306/фу/бар/баз", "фу/бар/баз"},
+		{"kafka://username:pasword@tcp(ip1:9093,ip2:9093,ip3:9093)/?topic=vsulblog", ""},
 	}
 
 	for i, test := range tests {
 		dsn := Parse(test.dsn)
 		if dsn.GetPath() != test.expected {
 			t.Errorf("Unexpected value in test \"%v\". Expected: \"%s\". Result: \"%s\"", i+1, test.expected, dsn.GetPath())
+		}
+	}
+}
+func TestParse_Source(t *testing.T) {
+	tests := []struct {
+		dsn      string
+		expected string
+	}{
+		{"mysql://user:password@example.com:3306/foo?tblsprefix=fs_", "user:password@example.com:3306/foo?tblsprefix=fs_"},
+		{"mysql://user:password@tcp(example.com:3306)/foo?tblsprefix=fs_", "user:password@tcp(example.com:3306)/foo?tblsprefix=fs_"},
+		{"mysql://user:password@example.com:3306/foo/bar/baz?tblsprefix=fs_", "user:password@example.com:3306/foo/bar/baz?tblsprefix=fs_"},
+		{"mysql://user:password@example.com:3306//?tblsprefix=fs_", "user:password@example.com:3306//?tblsprefix=fs_"},
+		{"mysql://user:password@example.com:3306/?tblsprefix=fs_", "user:password@example.com:3306/?tblsprefix=fs_"},
+		{"mysql://user:password@example.com:3306/foo", "user:password@example.com:3306/foo"},
+		{"mysql://user:password@example.com:3306/foo/bar/baz", "user:password@example.com:3306/foo/bar/baz"},
+		{"mysql://user:password@example.com:3306", "user:password@example.com:3306"},
+		{"mysql://user:password@example.com:3306/", "user:password@example.com:3306/"},
+		{"mysql://user:password@example.com:3306//", "user:password@example.com:3306//"},
+		{"example.com/foo?tblsprefix=fs_", "example.com/foo?tblsprefix=fs_"},
+		{"example.com/foo/bar/baz?tblsprefix=fs_", "example.com/foo/bar/baz?tblsprefix=fs_"},
+		{"example.com/foo", "example.com/foo"},
+		{"example.com/foo/bar/baz", "example.com/foo/bar/baz"},
+		{"socket:///foo/bar.sock", "/foo/bar.sock"},
+		{"mysql://user:password@example.com:3306/фу/бар/баз?tblsprefix=fs_", "user:password@example.com:3306/фу/бар/баз?tblsprefix=fs_"},
+		{"mysql://user:password@example.com:3306/фу/бар/баз", "user:password@example.com:3306/фу/бар/баз"},
+		{"kafka://username:pasword@tcp(ip1:9093,ip2:9093,ip3:9093)/?topic=vsulblog", "username:pasword@tcp(ip1:9093,ip2:9093,ip3:9093)/?topic=vsulblog"},
+	}
+
+	for i, test := range tests {
+		dsn := Parse(test.dsn)
+		if dsn.Source != test.expected {
+			t.Errorf("Unexpected value in test \"%v\". Expected: \"%s\". Result: \"%s\"", i+1, test.expected, dsn.Source)
 		}
 	}
 }
@@ -290,6 +324,9 @@ func TestParse_Params(t *testing.T) {
 			ExpectedItem{"barKey", "bar val"},
 		}},
 		{"mysql://user:password@example.com", ExpectedList{}},
+		{"kafka://username:pasword@tcp(ip1:9093,ip2:9093,ip3:9093)/?topic=vsulblog", ExpectedList{
+			ExpectedItem{"topic", "vsulblog"},
+		}},
 	}
 
 	for testId, test := range tests {
