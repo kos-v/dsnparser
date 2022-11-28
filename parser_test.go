@@ -185,13 +185,58 @@ func TestParse_Host(t *testing.T) {
 		{"mysql://user:password@хост.лок:3306", "хост.лок"},
 		{"mysql://user:password@хост.лок1", "хост.лок1"},
 		{"mysql://user:password@хост.ло1к", "хост.ло1к"},
-		{"kafka://username:pasword@tcp(ip1:9093,ip2:9093,ip3:9093)/?topic=vsulblog", "ip1:9093,ip2:9093,ip3:9093"},
+		{"kafka://username:pasword@tcp(ip1:9093,ip2:9093,ip3:9093)/?topic=vsulblog", "ip1"},
 	}
 
 	for i, test := range tests {
 		dsn := Parse(test.dsn)
 		if dsn.GetHost() != test.expected {
 			t.Errorf("Unexpected value in test \"%v\". Expected: \"%s\". Result: \"%s\"", i+1, test.expected, dsn.GetHost())
+		}
+	}
+}
+
+func TestParse_HostPort(t *testing.T) {
+	tests := []struct {
+		dsn      string
+		expected string
+	}{
+		{"mysql://user:password@example.com:3306/dbname?tblsprefix=fs_", "example.com:3306"},
+		{"mysql://user:password@tcp(example.com:3306)/dbname?tblsprefix=fs_", "example.com:3306"},
+		{"mysql://user:password@example.com/dbname?tblsprefix=fs_", "example.com"},
+		{"mysql://user:password@tcp(example.com)/dbname?tblsprefix=fs_", "example.com"},
+		{"mysql://user:password@localhost/dbname?tblsprefix=fs_", "localhost"},
+		{"mysql://user:password@127.0.0.1/dbname?tblsprefix=fs_", "127.0.0.1"},
+		{"mysql://user:password@example.com", "example.com"},
+		{"mysql://user:password@example.com:3306", "example.com:3306"},
+		{"mysql://user:password@/dbname?tblsprefix=fs_", ""},
+		{"mysql://user:password@:3306", ":3306"},
+		{"mysql://user:password@", ""},
+		{"mysql://example.loc", "example.loc"},
+		{"example.loc", "example.loc"},
+		{"example.loc:3306", "example.loc:3306"},
+		{"example.loc/path", "example.loc"},
+		{"example.loc:3306/path", "example.loc:3306"},
+		{"example.loc:/", "example.loc:"},
+		{"example", "example"},
+		{"example:3306", "example:3306"},
+		{"example/path", "example"},
+		{"example:/", "example:"},
+		{"mysql://user:password@not$valid@host/dbname?tblsprefix=fs_", "not$valid@host"},
+		{"mysql://user:password@not$valid@hostdbname?tblsprefix=fs_", "not$valid@hostdbname?tblsprefix=fs_"},
+		{"mysql://user:password@хост.лок:3306/dbname?tblsprefix=fs_", "хост.лок:3306"},
+		{"mysql://user:password@хост.лок", "хост.лок"},
+		{"mysql://user:password@хост.лок:3306/путь", "хост.лок:3306"},
+		{"mysql://user:password@хост.лок:3306", "хост.лок:3306"},
+		{"mysql://user:password@хост.лок1", "хост.лок1"},
+		{"mysql://user:password@хост.ло1к", "хост.ло1к"},
+		{"kafka://username:pasword@tcp(ip1:9093,ip2:9093,ip3:9093)/?topic=vsulblog", "ip1:9093,ip2:9093,ip3:9093"},
+	}
+
+	for i, test := range tests {
+		dsn := Parse(test.dsn)
+		if dsn.GetHostPort() != test.expected {
+			t.Errorf("Unexpected value in test \"%v\". Expected: \"%s\". Result: \"%s\"", i+1, test.expected, dsn.GetHostPort())
 		}
 	}
 }
@@ -207,7 +252,7 @@ func TestParse_Port(t *testing.T) {
 		{"mysql://user:password@tcp(example.com:3306)", "3306"},
 		{"mysql://user:password@example.com/dbname?tblsprefix=fs_", ""},
 		{"mysql://user:password@example.com:/dbname?tblsprefix=fs_", ""},
-		{"mysql://user:password@example.com:bad, but working/dbname?tblsprefix=fs_", ""},
+		{"mysql://user:password@example.com:bad, but working/dbname?tblsprefix=fs_", "bad, but working"},
 		{"example.com:3306", "3306"},
 		{"tcp(example.com:3306)", "3306"},
 		{"example.com:", ""},

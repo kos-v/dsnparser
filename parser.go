@@ -2,14 +2,14 @@ package dsnparser
 
 // DSN container for data after dsn parsing.
 type DSN struct {
-	raw    string
-	scheme string
-	// dsn source : dsn without schema
-	source    string
+	raw       string
+	scheme    string
+	source    string // dsn source : dsn without schema
 	user      string
 	password  string
 	host      string
 	port      string
+	hostport  string
 	path      string
 	params    map[string]string
 	transport string
@@ -18,6 +18,11 @@ type DSN struct {
 // GetHost returns a host as the string.
 func (d *DSN) GetHost() string {
 	return d.host
+}
+
+// GetHostPort returns a hostport as the string.
+func (d *DSN) GetHostPort() string {
+	return d.hostport
 }
 
 // GetParam returns an additional parameter by key as the string.
@@ -148,14 +153,12 @@ func Parse(raw string) *DSN {
 		break
 	}
 
-	multihost := false
+	// multihost := false
 	// Host and port parsing
 	for dsnPos, dsnSymbol := range dsn {
 		endPos := -1
 		if dsnSymbol == '/' {
 			endPos = dsnPos
-		} else if dsnSymbol == ',' {
-			multihost = true
 		} else if dsnPos == len(dsn)-1 {
 			endPos = len(dsn)
 		}
@@ -164,23 +167,19 @@ func Parse(raw string) *DSN {
 		}
 		hostPort := dsn[0:endPos]
 
-		if multihost {
-			d.host = string(hostPort)
-		} else {
-
-			hasSeparator := false
-			for hpPos, hpSymbol := range hostPort {
-				if hpSymbol == ':' {
-					hasSeparator = true
-					d.host = string(hostPort[0:hpPos])
-					d.port = string(hostPort[hpPos+1:])
-					break
-				}
-			}
-			if !hasSeparator {
-				d.host = string(hostPort)
+		hasSeparator := false
+		for hpPos, hpSymbol := range hostPort {
+			if hpSymbol == ':' {
+				hasSeparator = true
+				d.host = string(hostPort[0:hpPos])
+				d.port = string(hostPort[hpPos+1:])
+				break
 			}
 		}
+		if !hasSeparator {
+			d.host = string(hostPort)
+		}
+		d.hostport = string(hostPort)
 
 		dsn = dsn[dsnPos+1:]
 		break
