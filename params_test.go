@@ -58,6 +58,7 @@ func TestDecodeMapToStruct(t *testing.T) {
 		fmt.Println(err)
 		assert.Equal(t, err != nil, tt.wantError)
 		if err != nil {
+			fmt.Println(err)
 			continue
 		}
 		assert.Equal(t, res, tt.param)
