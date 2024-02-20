@@ -4,10 +4,12 @@ package dsnparser
 type DSN struct {
 	raw       string
 	scheme    string
+	source    string // dsn source : dsn without schema
 	user      string
 	password  string
 	host      string
 	port      string
+	hostport  string
 	path      string
 	params    map[string]string
 	transport string
@@ -16,6 +18,11 @@ type DSN struct {
 // GetHost returns a host as the string.
 func (d *DSN) GetHost() string {
 	return d.host
+}
+
+// GetHostPort returns a hostport as the string.
+func (d *DSN) GetHostPort() string {
+	return d.hostport
 }
 
 // GetParam returns an additional parameter by key as the string.
@@ -74,10 +81,16 @@ func (d *DSN) GetUser() string {
 	return d.user
 }
 
+// GetSource returns a dsn source  user as the string.
+func (d *DSN) GetSource() string {
+	return d.source
+}
+
 // Parse receives a raw dsn as argument, parses it and returns it in the DSN structure.
 func Parse(raw string) *DSN {
 	d := DSN{
 		raw:    raw,
+		source: raw,
 		params: map[string]string{},
 	}
 	dsn := []rune(d.raw)
@@ -88,6 +101,7 @@ func Parse(raw string) *DSN {
 		if symbol == '/' && pos > 2 && string(dsn[pos-2:pos+1]) == "://" {
 			d.scheme = string(dsn[0 : pos-2])
 			dsn = dsn[pos+1:]
+			d.source = string(dsn)
 			break
 		}
 	}
@@ -139,6 +153,7 @@ func Parse(raw string) *DSN {
 		break
 	}
 
+	// multihost := false
 	// Host and port parsing
 	for dsnPos, dsnSymbol := range dsn {
 		endPos := -1
@@ -147,26 +162,28 @@ func Parse(raw string) *DSN {
 		} else if dsnPos == len(dsn)-1 {
 			endPos = len(dsn)
 		}
-
-		if endPos > -1 {
-			hostPort := dsn[0:endPos]
-
-			hasSeparator := false
-			for hpPos, hpSymbol := range hostPort {
-				if hpSymbol == ':' {
-					hasSeparator = true
-					d.host = string(hostPort[0:hpPos])
-					d.port = string(hostPort[hpPos+1:])
-					break
-				}
-			}
-			if !hasSeparator {
-				d.host = string(hostPort)
-			}
-
-			dsn = dsn[dsnPos+1:]
-			break
+		if endPos == -1 {
+			continue
 		}
+		hostPort := dsn[0:endPos]
+
+		hasSeparator := false
+		for hpPos, hpSymbol := range hostPort {
+			if hpSymbol == ':' {
+				hasSeparator = true
+				d.host = string(hostPort[0:hpPos])
+				d.port = string(hostPort[hpPos+1:])
+				break
+			}
+		}
+		if !hasSeparator {
+			d.host = string(hostPort)
+		}
+		d.hostport = string(hostPort)
+
+		dsn = dsn[dsnPos+1:]
+		break
+
 	}
 
 	// Path parsing
